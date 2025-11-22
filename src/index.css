@@ -40,7 +40,54 @@ All colors MUST be HSL.
 
     --gold: 45 100% 50%;
     --gold-dark: 42 100% 40%;
-    
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 45 100% 50%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 45 100% 50%;
+
+    --radius: 0.125rem;
+
+    --gold: 45 100% 50%;
+    --gold-dark: 42 100% 40%;
+
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
@@ -52,5 +99,18 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Admin Panel Button Enhancements */
+  #admin-root button[data-size="default"]:not([data-variant="ghost"]):not([data-variant="link"]) {
+    @apply h-11 px-6 text-base font-bold tracking-wide shadow-sm border border-white/10;
+  }
+
+  #admin-root button[data-variant="default"] {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200;
+  }
+
+  #admin-root button[data-variant="destructive"] {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm;
   }
 }

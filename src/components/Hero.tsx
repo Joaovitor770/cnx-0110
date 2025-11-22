@@ -9,7 +9,7 @@ const slides = [
     cta: "Ver Coleção",
   },
   {
-    title: "Nova Coleção 2024",
+    title: "Nova Coleção 2026",
     subtitle: "Streetwear premium com identidade autêntica",
     cta: "Explorar Agora",
   },
@@ -35,20 +35,20 @@ const Hero = () => {
 
   return (
     <section className="relative h-[70vh] md:h-[80vh] bg-gradient-to-br from-background via-secondary to-background overflow-hidden">
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnoiIHN0cm9rZT0iIzMzMyIgc3Ryb2tlLXdpZHRoPSIuNSIgb3BhY2l0eT0iLjEiLz48L2c+PC9zdmc+')] opacity-20"></div>
-      
+      <div className="absolute inset-0 bg-[url('/hero-bg.png')] bg-cover bg-center opacity-40 blur-sm"></div>
+
       <div className="container mx-auto px-4 h-full relative z-10">
         <div className="flex items-center justify-center h-full">
-          <div className="text-center max-w-4xl animate-fade-in">
+          <div key={currentSlide} className="text-center max-w-4xl animate-in fade-in slide-in-from-right-8 duration-700">
             <h1 className="font-impact text-5xl md:text-7xl lg:text-8xl text-foreground mb-4 tracking-tight uppercase">
               {slides[currentSlide].title}
             </h1>
             <p className="text-lg md:text-2xl text-muted-foreground mb-8 tracking-[0.3em] uppercase font-light">
               {slides[currentSlide].subtitle}
             </p>
-            <Button 
-              size="lg" 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-12 py-6 tracking-wider uppercase font-bold"
+            <Button
+              size="lg"
+              className="bg-[#D4AF37] text-black hover:bg-[#D4AF37]/90 text-lg px-12 py-6 tracking-wider uppercase font-bold"
             >
               {slides[currentSlide].cta}
             </Button>
@@ -75,11 +75,10 @@ const Hero = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentSlide
-                  ? "bg-primary w-8"
-                  : "bg-muted-foreground hover:bg-foreground"
-              }`}
+              className={`w-2 h-2 rounded-full transition-all ${index === currentSlide
+                ? "bg-primary w-8"
+                : "bg-muted-foreground hover:bg-foreground"
+                }`}
             />
           ))}
         </div>

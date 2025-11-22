@@ -1,23 +1,11 @@
-const collections = [
-  {
-    name: "Masculino",
-    image: "https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?w=500&q=80",
-  },
-  {
-    name: "Feminino",
-    image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500&q=80",
-  },
-  {
-    name: "Street",
-    image: "https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=500&q=80",
-  },
-  {
-    name: "Acessórios",
-    image: "https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=500&q=80",
-  },
-];
+import { useCollections } from "@/contexts/CollectionContext";
+import { Link } from "react-router-dom";
 
 const Collections = () => {
+  const { collections } = useCollections();
+
+  if (collections.length === 0) return null;
+
   return (
     <section className="py-20 bg-secondary" id="collections">
       <div className="container mx-auto px-4">
@@ -32,9 +20,9 @@ const Collections = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {collections.map((collection) => (
-            <a
-              key={collection.name}
-              href={`#${collection.name.toLowerCase()}`}
+            <Link
+              key={collection.id}
+              to={`/collections/${collection.slug}`}
               className="group relative overflow-hidden aspect-[3/4] rounded-sm"
             >
               <img
@@ -49,7 +37,7 @@ const Collections = () => {
                 </h3>
               </div>
               <div className="absolute top-0 left-0 right-0 h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-            </a>
+            </Link>
           ))}
         </div>
       </div>
