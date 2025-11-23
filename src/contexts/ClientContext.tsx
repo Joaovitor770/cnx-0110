@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Client {
     id: number;
@@ -13,63 +14,127 @@ export interface Client {
 
 interface ClientContextType {
     clients: Client[];
-    addClient: (client: Omit<Client, "id" | "joinedAt" | "ordersCount">) => void;
-    updateClient: (id: number, client: Partial<Client>) => void;
-    deleteClient: (id: number) => void;
+    addClient: (client: Omit<Client, "id" | "joinedAt" | "ordersCount">) => Promise<void>;
+    updateClient: (id: number, client: Partial<Client>) => Promise<void>;
+    deleteClient: (id: number) => Promise<void>;
+    loading: boolean;
 }
 
 const ClientContext = createContext<ClientContextType | undefined>(undefined);
 
-const defaultClients: Client[] = [];
-
 export const ClientProvider = ({ children }: { children: React.ReactNode }) => {
-    const [clients, setClients] = useState<Client[]>(() => {
-        const saved = localStorage.getItem("clients");
-        return saved ? JSON.parse(saved) : defaultClients;
-    });
+    const [clients, setClients] = useState<Client[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        localStorage.setItem("clients", JSON.stringify(clients));
-        window.dispatchEvent(new Event("storage"));
-    }, [clients]);
+    const fetchClients = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('clients')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-    // Listen for changes from other tabs
-    useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === "clients" && e.newValue) {
-                setClients(JSON.parse(e.newValue));
+            if (error) throw error;
+
+            if (data) {
+                const formattedClients: Client[] = data.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    email: item.email,
+                    status: item.status,
+                    joinedAt: item.joined_at,
+                    ordersCount: item.orders_count
+                }));
+                setClients(formattedClients);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching clients:', error);
+            toast.error("Erro ao carregar clientes");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        window.addEventListener("storage", handleStorageChange);
-        return () => window.removeEventListener("storage", handleStorageChange);
+    useEffect(() => {
+        fetchClients();
+
+        const channel = supabase
+            .channel('public:clients')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'clients' },
+                (payload) => {
+                    console.log('Realtime update:', payload);
+                    fetchClients();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
-    const addClient = (client: Omit<Client, "id" | "joinedAt" | "ordersCount">) => {
-        const newClient: Client = {
-            ...client,
-            id: Date.now(),
-            joinedAt: new Date().toISOString().split("T")[0],
-            ordersCount: 0,
-        };
-        setClients((prev) => [...prev, newClient]);
-        toast.success("Cliente adicionado com sucesso!");
+    const addClient = async (client: Omit<Client, "id" | "joinedAt" | "ordersCount">) => {
+        try {
+            const { error } = await supabase
+                .from('clients')
+                .insert([{
+                    name: client.name,
+                    email: client.email,
+                    status: client.status,
+                    joined_at: new Date().toISOString().split("T")[0],
+                    orders_count: 0
+                }]);
+
+            if (error) throw error;
+            toast.success("Cliente adicionado com sucesso!");
+        } catch (error) {
+            console.error('Error adding client:', error);
+            toast.error("Erro ao adicionar cliente");
+        }
     };
 
-    const updateClient = (id: number, updatedClient: Partial<Client>) => {
-        setClients((prev) =>
-            prev.map((c) => (c.id === id ? { ...c, ...updatedClient } : c))
-        );
-        toast.success("Cliente atualizado com sucesso!");
+    const updateClient = async (id: number, updatedClient: Partial<Client>) => {
+        try {
+            const updates: any = { ...updatedClient };
+            if (updatedClient.joinedAt) updates.joined_at = updatedClient.joinedAt;
+            if (updatedClient.ordersCount) updates.orders_count = updatedClient.ordersCount;
+
+            // Remove fields not in DB
+            delete updates.joinedAt;
+            delete updates.ordersCount;
+            delete updates.orders;
+
+            const { error } = await supabase
+                .from('clients')
+                .update(updates)
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success("Cliente atualizado com sucesso!");
+        } catch (error) {
+            console.error('Error updating client:', error);
+            toast.error("Erro ao atualizar cliente");
+        }
     };
 
-    const deleteClient = (id: number) => {
-        setClients((prev) => prev.filter((c) => c.id !== id));
-        toast.success("Cliente removido com sucesso!");
+    const deleteClient = async (id: number) => {
+        try {
+            const { error } = await supabase
+                .from('clients')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success("Cliente removido com sucesso!");
+        } catch (error) {
+            console.error('Error deleting client:', error);
+            toast.error("Erro ao remover cliente");
+        }
     };
 
     return (
-        <ClientContext.Provider value={{ clients, addClient, updateClient, deleteClient }}>
+        <ClientContext.Provider value={{ clients, addClient, updateClient, deleteClient, loading }}>
             {children}
         </ClientContext.Provider>
     );

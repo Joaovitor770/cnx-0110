@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface OrderItem {
     productId: number;
@@ -22,56 +23,105 @@ export interface Order {
 
 interface OrderContextType {
     orders: Order[];
-    addOrder: (order: Omit<Order, "id" | "createdAt">) => void;
-    updateOrderStatus: (id: number, status: Order["status"]) => void;
+    addOrder: (order: Omit<Order, "id" | "createdAt">) => Promise<void>;
+    updateOrderStatus: (id: number, status: Order["status"]) => Promise<void>;
+    loading: boolean;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
-const defaultOrders: Order[] = [];
-
 export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
-    const [orders, setOrders] = useState<Order[]>(() => {
-        const saved = localStorage.getItem("orders");
-        return saved ? JSON.parse(saved) : defaultOrders;
-    });
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        localStorage.setItem("orders", JSON.stringify(orders));
-        window.dispatchEvent(new Event("storage"));
-    }, [orders]);
+    const fetchOrders = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-    // Listen for changes from other tabs
-    useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === "orders" && e.newValue) {
-                setOrders(JSON.parse(e.newValue));
+            if (error) throw error;
+
+            if (data) {
+                const formattedOrders: Order[] = data.map(item => ({
+                    id: item.id,
+                    clientId: item.client_id || 0,
+                    clientName: item.client_name,
+                    clientAddress: item.client_address,
+                    items: item.items as OrderItem[],
+                    total: Number(item.total),
+                    status: item.status,
+                    createdAt: item.created_at
+                }));
+                setOrders(formattedOrders);
             }
-        };
-
-        window.addEventListener("storage", handleStorageChange);
-        return () => window.removeEventListener("storage", handleStorageChange);
-    }, []);
-
-    const addOrder = (order: Omit<Order, "id" | "createdAt">) => {
-        const newOrder: Order = {
-            ...order,
-            id: Date.now(),
-            createdAt: new Date().toISOString(),
-        };
-        setOrders((prev) => [newOrder, ...prev]);
-        toast.success("Pedido realizado com sucesso!");
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            toast.error("Erro ao carregar pedidos");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const updateOrderStatus = (id: number, status: Order["status"]) => {
-        setOrders((prev) =>
-            prev.map((o) => (o.id === id ? { ...o, status } : o))
-        );
-        toast.success("Status do pedido atualizado!");
+    useEffect(() => {
+        fetchOrders();
+
+        const channel = supabase
+            .channel('public:orders')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'orders' },
+                (payload) => {
+                    console.log('Realtime update:', payload);
+                    fetchOrders();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
+
+    const addOrder = async (order: Omit<Order, "id" | "createdAt">) => {
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .insert([{
+                    client_id: order.clientId,
+                    client_name: order.clientName,
+                    client_address: order.clientAddress,
+                    items: order.items,
+                    total: order.total,
+                    status: order.status
+                }]);
+
+            if (error) throw error;
+            toast.success("Pedido realizado com sucesso!");
+        } catch (error) {
+            console.error('Error adding order:', error);
+            toast.error("Erro ao realizar pedido");
+        }
+    };
+
+    const updateOrderStatus = async (id: number, status: Order["status"]) => {
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .update({ status })
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success("Status do pedido atualizado!");
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            toast.error("Erro ao atualizar status do pedido");
+        }
     };
 
     return (
-        <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus }}>
+        <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus, loading }}>
             {children}
         </OrderContext.Provider>
     );
