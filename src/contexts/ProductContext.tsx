@@ -54,7 +54,7 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                     price: Number(item.price),
                     images: item.images || [],
                     category: item.category,
-                    sizes: item.sizes as ProductSize[],
+                    sizes: (item.sizes as unknown) as ProductSize[],
                     description: item.description,
                     slug: item.slug,
                     createdAt: item.created_at,
@@ -111,7 +111,7 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                     price: product.price,
                     images: uploadedImages,
                     category: product.category,
-                    sizes: product.sizes,
+                    sizes: product.sizes as any,
                     description: product.description,
                     slug: slug,
                     collection_id: product.collectionId
@@ -140,7 +140,7 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                 updates.collection_id = updatedProduct.collectionId;
                 delete updates.collectionId;
             }
-            if (updatedProduct.createdAt) {
+            if ('createdAt' in updates) {
                 delete updates.createdAt;
             }
 
