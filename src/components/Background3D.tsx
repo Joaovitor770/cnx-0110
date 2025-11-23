@@ -2,8 +2,10 @@ import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, Sphere, MeshDistortMaterial } from '@react-three/drei';
 
+import * as THREE from 'three';
+
 const AnimatedSphere = () => {
-    const sphereRef = useRef<any>(null);
+    const sphereRef = useRef<THREE.Mesh>(null);
 
     useFrame(({ clock }) => {
         if (sphereRef.current) {

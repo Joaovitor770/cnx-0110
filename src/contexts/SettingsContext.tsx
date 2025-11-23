@@ -104,7 +104,8 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
 
     const updateSettings = async (newSettings: Partial<StoreSettings>) => {
         try {
-            const updates: any = {};
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const updates: Record<string, any> = {};
             if (newSettings.storeName !== undefined) updates.store_name = newSettings.storeName;
             if (newSettings.logo !== undefined) updates.logo = await uploadImage(newSettings.logo);
             if (newSettings.banner !== undefined) updates.banner = await uploadImage(newSettings.banner);

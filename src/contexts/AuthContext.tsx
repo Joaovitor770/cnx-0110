@@ -46,9 +46,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       toast.success("Login realizado com sucesso!");
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login error:", error);
-      toast.error(error.message || "Credenciais inválidas");
+      toast.error((error as Error).message || "Credenciais inválidas");
       return false;
     }
   };

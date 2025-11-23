@@ -4,14 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface DiagnosticResult {
+    name: string;
+    status: "OK" | "Erro" | "Falha";
+    message: string;
+}
+
 const Diagnostics = () => {
     const { isAuthenticated } = useAuth();
-    const [results, setResults] = useState<any[]>([]);
+    const [results, setResults] = useState<DiagnosticResult[]>([]);
     const [loading, setLoading] = useState(false);
 
     const runTests = async () => {
         setLoading(true);
-        const newResults = [];
+        const newResults: DiagnosticResult[] = [];
 
         // Test 0: Environment Variables
         try {
@@ -23,8 +29,8 @@ const Diagnostics = () => {
                 status: "OK",
                 message: "URL e Key configuradas"
             });
-        } catch (e: any) {
-            newResults.push({ name: "Variáveis de Ambiente", status: "Erro", message: e.message });
+        } catch (e) {
+            newResults.push({ name: "Variáveis de Ambiente", status: "Erro", message: (e as Error).message });
         }
 
         // Test 1: Auth Status
@@ -35,21 +41,21 @@ const Diagnostics = () => {
                 status: session ? "OK" : "Falha",
                 message: session ? `Logado como: ${session.user.email}` : "Não há sessão ativa no Supabase"
             });
-        } catch (e: any) {
-            newResults.push({ name: "Autenticação", status: "Erro", message: e.message });
+        } catch (e) {
+            newResults.push({ name: "Autenticação", status: "Erro", message: (e as Error).message });
         }
 
         // Test 2: Database Connection (Read)
         try {
-            const { data, error } = await supabase.from('collections').select('count').single();
+            const { error } = await supabase.from('collections').select('count').single();
             if (error) throw error;
             newResults.push({
                 name: "Banco de Dados (Leitura)",
                 status: "OK",
                 message: "Conexão estabelecida com sucesso"
             });
-        } catch (e: any) {
-            newResults.push({ name: "Banco de Dados (Leitura)", status: "Erro", message: e.message });
+        } catch (e) {
+            newResults.push({ name: "Banco de Dados (Leitura)", status: "Erro", message: (e as Error).message });
         }
 
         // Test 3: Database Write (Insert/Delete)
@@ -74,8 +80,8 @@ const Diagnostics = () => {
                 status: "OK",
                 message: "Gravação e exclusão funcionaram"
             });
-        } catch (e: any) {
-            newResults.push({ name: "Banco de Dados (Escrita)", status: "Erro", message: e.message });
+        } catch (e) {
+            newResults.push({ name: "Banco de Dados (Escrita)", status: "Erro", message: (e as Error).message });
         }
 
         // Test 4: Storage Upload
@@ -94,8 +100,8 @@ const Diagnostics = () => {
                 status: "OK",
                 message: "Upload de arquivo funcionou"
             });
-        } catch (e: any) {
-            newResults.push({ name: "Storage (Upload)", status: "Erro", message: e.message });
+        } catch (e) {
+            newResults.push({ name: "Storage (Upload)", status: "Erro", message: (e as Error).message });
         }
 
         setResults(newResults);

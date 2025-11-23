@@ -45,9 +45,9 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
                 }));
                 setCollections(formattedCollections);
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error fetching collections:', error);
-            toast.error(error.message || "Erro ao carregar coleções");
+            toast.error((error as Error).message || "Erro ao carregar coleções");
         } finally {
             setLoading(false);
         }
@@ -97,15 +97,15 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
 
             if (error) throw error;
             toast.success("Coleção adicionada com sucesso!");
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error adding collection:', error);
-            toast.error(error.message || "Erro ao adicionar coleção");
+            toast.error((error as Error).message || "Erro ao adicionar coleção");
         }
     };
 
     const updateCollection = async (id: number, updatedCollection: Partial<Collection>) => {
         try {
-            const updates: any = { ...updatedCollection };
+            const updates: Partial<Collection> = { ...updatedCollection };
             if (updatedCollection.name) {
                 updates.slug = generateSlug(updatedCollection.name);
             }
@@ -120,9 +120,9 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
 
             if (error) throw error;
             toast.success("Coleção atualizada com sucesso!");
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error updating collection:', error);
-            toast.error(error.message || "Erro ao atualizar coleção");
+            toast.error((error as Error).message || "Erro ao atualizar coleção");
         }
     };
 
@@ -135,9 +135,9 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
 
             if (error) throw error;
             toast.success("Coleção removida com sucesso!");
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error deleting collection:', error);
-            toast.error(error.message || "Erro ao remover coleção");
+            toast.error((error as Error).message || "Erro ao remover coleção");
         }
     };
 

@@ -96,7 +96,8 @@ export const ClientProvider = ({ children }: { children: React.ReactNode }) => {
 
     const updateClient = async (id: number, updatedClient: Partial<Client>) => {
         try {
-            const updates: any = { ...updatedClient };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const updates: Record<string, any> = { ...updatedClient };
             if (updatedClient.joinedAt) updates.joined_at = updatedClient.joinedAt;
             if (updatedClient.ordersCount) updates.orders_count = updatedClient.ordersCount;
 

@@ -62,9 +62,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                 }));
                 setProducts(formattedProducts);
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error fetching products:', error);
-            toast.error(error.message || "Erro ao carregar produtos");
+            toast.error((error as Error).message || "Erro ao carregar produtos");
         } finally {
             setLoading(false);
         }
@@ -119,15 +119,16 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
 
             if (error) throw error;
             toast.success("Produto adicionado com sucesso!");
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error adding product:', error);
-            toast.error(error.message || "Erro ao adicionar produto");
+            toast.error((error as Error).message || "Erro ao adicionar produto");
         }
     };
 
     const updateProduct = async (id: number, updatedProduct: Partial<Product>) => {
         try {
-            const updates: any = { ...updatedProduct };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const updates: Record<string, any> = { ...updatedProduct };
             if (updatedProduct.name) {
                 updates.slug = generateSlug(updatedProduct.name);
             }
@@ -150,9 +151,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
 
             if (error) throw error;
             toast.success("Produto atualizado com sucesso!");
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error updating product:', error);
-            toast.error(error.message || "Erro ao atualizar produto");
+            toast.error((error as Error).message || "Erro ao atualizar produto");
         }
     };
 
@@ -165,9 +166,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
 
             if (error) throw error;
             toast.success("Produto removido com sucesso!");
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error deleting product:', error);
-            toast.error(error.message || "Erro ao remover produto");
+            toast.error((error as Error).message || "Erro ao remover produto");
         }
     };
 

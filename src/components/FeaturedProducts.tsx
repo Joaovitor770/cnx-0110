@@ -5,11 +5,13 @@ import { useProducts } from "@/contexts/ProductContext";
 import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
 
+import { Product } from "@/contexts/ProductContext";
+
 const FeaturedProducts = () => {
   const { addToCart } = useCart();
   const { products } = useProducts();
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: Product) => {
     addToCart({
       id: product.id,
       name: product.name,
