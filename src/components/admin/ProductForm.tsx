@@ -37,7 +37,6 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
         category: "",
         images: [] as string[],
         sizes: [] as { size: string; stock: number }[],
-        sizes: [] as { size: string; stock: number }[],
         description: "",
         collectionId: undefined as number | undefined,
     });
@@ -53,7 +52,6 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
                 category: initialData.category,
                 images: initialData.images || [],
                 sizes: initialData.sizes || [],
-                sizes: initialData.sizes || [],
                 description: initialData.description || "",
                 collectionId: initialData.collectionId,
             });
@@ -62,8 +60,6 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
                 name: "",
                 price: "",
                 category: "",
-                images: [],
-                sizes: [],
                 images: [],
                 sizes: [],
                 description: "",

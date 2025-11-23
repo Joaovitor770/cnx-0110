@@ -62,9 +62,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                 }));
                 setProducts(formattedProducts);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching products:', error);
-            toast.error("Erro ao carregar produtos");
+            toast.error(error.message || "Erro ao carregar produtos");
         } finally {
             setLoading(false);
         }
@@ -119,9 +119,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
 
             if (error) throw error;
             toast.success("Produto adicionado com sucesso!");
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error adding product:', error);
-            toast.error("Erro ao adicionar produto");
+            toast.error(error.message || "Erro ao adicionar produto");
         }
     };
 
@@ -150,9 +150,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
 
             if (error) throw error;
             toast.success("Produto atualizado com sucesso!");
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating product:', error);
-            toast.error("Erro ao atualizar produto");
+            toast.error(error.message || "Erro ao atualizar produto");
         }
     };
 
@@ -165,9 +165,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
 
             if (error) throw error;
             toast.success("Produto removido com sucesso!");
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting product:', error);
-            toast.error("Erro ao remover produto");
+            toast.error(error.message || "Erro ao remover produto");
         }
     };
 

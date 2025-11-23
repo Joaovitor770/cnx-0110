@@ -14,6 +14,7 @@ import Clients from "./pages/admin/Clients";
 import Orders from "./pages/admin/Orders";
 import Settings from "./pages/admin/Settings";
 import Collections from "./pages/admin/Collections";
+import Diagnostics from "./pages/admin/Diagnostics";
 import AdminLayout from "./components/admin/AdminLayout";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -53,6 +54,7 @@ const App = () => (
                           <Route path="orders" element={<Orders />} />
                           <Route path="collections" element={<Collections />} />
                           <Route path="settings" element={<Settings />} />
+                          <Route path="diagnostics" element={<Diagnostics />} />
                         </Route>
 
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

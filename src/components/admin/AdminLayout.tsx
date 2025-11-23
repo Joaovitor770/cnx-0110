@@ -6,16 +6,17 @@ import { useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const AdminLayout = () => {
-    const { isAuthenticated, logout } = useAuth();
+    const { isAuthenticated, logout, loading } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!isAuthenticated) {
+        if (!loading && !isAuthenticated) {
             navigate("/admin/login");
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, loading, navigate]);
 
+    if (loading) return <div className="flex items-center justify-center h-screen">Carregando...</div>;
     if (!isAuthenticated) return null;
 
     const menuItems = [
@@ -25,6 +26,7 @@ const AdminLayout = () => {
         { icon: ShoppingBag, label: "Pedidos", path: "/admin/orders" },
         { icon: Users, label: "Clientes", path: "/admin/clients" },
         { icon: Settings, label: "Configurações", path: "/admin/settings" },
+        { icon: Layers, label: "Diagnóstico", path: "/admin/diagnostics" },
     ];
 
     const SidebarContent = () => (

@@ -12,9 +12,10 @@ const Login = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (login(email, password)) {
+        const success = await login(email, password);
+        if (success) {
             navigate("/admin");
         }
     };
