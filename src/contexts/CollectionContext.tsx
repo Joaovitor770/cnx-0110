@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Collection {
     id: number;
@@ -11,37 +12,64 @@ export interface Collection {
 
 interface CollectionContextType {
     collections: Collection[];
-    addCollection: (collection: Omit<Collection, "id" | "slug">) => void;
-    updateCollection: (id: number, collection: Partial<Collection>) => void;
-    deleteCollection: (id: number) => void;
+    addCollection: (collection: Omit<Collection, "id" | "slug">) => Promise<void>;
+    updateCollection: (id: number, collection: Partial<Collection>) => Promise<void>;
+    deleteCollection: (id: number) => Promise<void>;
     getCollectionBySlug: (slug: string) => Collection | undefined;
+    loading: boolean;
 }
 
 const CollectionContext = createContext<CollectionContextType | undefined>(undefined);
 
-const defaultCollections: Collection[] = [];
-
 export const CollectionProvider = ({ children }: { children: React.ReactNode }) => {
-    const [collections, setCollections] = useState<Collection[]>(() => {
-        const saved = localStorage.getItem("collections");
-        return saved ? JSON.parse(saved) : defaultCollections;
-    });
+    const [collections, setCollections] = useState<Collection[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        localStorage.setItem("collections", JSON.stringify(collections));
-        window.dispatchEvent(new Event("storage"));
-    }, [collections]);
+    const fetchCollections = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('collections')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-    // Listen for changes from other tabs
-    useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === "collections" && e.newValue) {
-                setCollections(JSON.parse(e.newValue));
+            if (error) throw error;
+
+            if (data) {
+                const formattedCollections: Collection[] = data.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    image: item.image,
+                    slug: item.slug,
+                    description: item.description
+                }));
+                setCollections(formattedCollections);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching collections:', error);
+            toast.error("Erro ao carregar coleções");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        window.addEventListener("storage", handleStorageChange);
-        return () => window.removeEventListener("storage", handleStorageChange);
+    useEffect(() => {
+        fetchCollections();
+
+        const channel = supabase
+            .channel('public:collections')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'collections' },
+                (payload) => {
+                    console.log('Realtime update:', payload);
+                    fetchCollections();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const generateSlug = (name: string) => {
@@ -53,35 +81,59 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
             .replace(/(^-|-$)+/g, "");
     };
 
-    const addCollection = (collection: Omit<Collection, "id" | "slug">) => {
-        const newCollection: Collection = {
-            ...collection,
-            id: Date.now(),
-            slug: generateSlug(collection.name),
-        };
-        setCollections((prev) => [...prev, newCollection]);
-        toast.success("Coleção adicionada com sucesso!");
+    const addCollection = async (collection: Omit<Collection, "id" | "slug">) => {
+        try {
+            const slug = generateSlug(collection.name);
+            const { error } = await supabase
+                .from('collections')
+                .insert([{
+                    name: collection.name,
+                    image: collection.image,
+                    description: collection.description,
+                    slug: slug
+                }]);
+
+            if (error) throw error;
+            toast.success("Coleção adicionada com sucesso!");
+        } catch (error) {
+            console.error('Error adding collection:', error);
+            toast.error("Erro ao adicionar coleção");
+        }
     };
 
-    const updateCollection = (id: number, updatedCollection: Partial<Collection>) => {
-        setCollections((prev) =>
-            prev.map((c) => {
-                if (c.id === id) {
-                    const newCollection = { ...c, ...updatedCollection };
-                    if (updatedCollection.name) {
-                        newCollection.slug = generateSlug(updatedCollection.name);
-                    }
-                    return newCollection;
-                }
-                return c;
-            })
-        );
-        toast.success("Coleção atualizada com sucesso!");
+    const updateCollection = async (id: number, updatedCollection: Partial<Collection>) => {
+        try {
+            const updates: any = { ...updatedCollection };
+            if (updatedCollection.name) {
+                updates.slug = generateSlug(updatedCollection.name);
+            }
+
+            const { error } = await supabase
+                .from('collections')
+                .update(updates)
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success("Coleção atualizada com sucesso!");
+        } catch (error) {
+            console.error('Error updating collection:', error);
+            toast.error("Erro ao atualizar coleção");
+        }
     };
 
-    const deleteCollection = (id: number) => {
-        setCollections((prev) => prev.filter((c) => c.id !== id));
-        toast.success("Coleção removida com sucesso!");
+    const deleteCollection = async (id: number) => {
+        try {
+            const { error } = await supabase
+                .from('collections')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success("Coleção removida com sucesso!");
+        } catch (error) {
+            console.error('Error deleting collection:', error);
+            toast.error("Erro ao remover coleção");
+        }
     };
 
     const getCollectionBySlug = (slug: string) => {
@@ -89,7 +141,7 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
     };
 
     return (
-        <CollectionContext.Provider value={{ collections, addCollection, updateCollection, deleteCollection, getCollectionBySlug }}>
+        <CollectionContext.Provider value={{ collections, addCollection, updateCollection, deleteCollection, getCollectionBySlug, loading }}>
             {children}
         </CollectionContext.Provider>
     );

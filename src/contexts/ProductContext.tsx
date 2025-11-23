@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface ProductSize {
     size: string;
@@ -10,11 +11,11 @@ export interface Product {
     id: number;
     name: string;
     brand: string;
-    price: number; // Stored as number for calculations
-    images: string[]; // Base64 strings
+    price: number;
+    images: string[];
     category: string;
     sizes: ProductSize[];
-    description: string; // Rich text (HTML)
+    description: string;
     slug: string;
     createdAt: string;
     collectionId?: number;
@@ -22,37 +23,70 @@ export interface Product {
 
 interface ProductContextType {
     products: Product[];
-    addProduct: (product: Omit<Product, "id" | "slug" | "createdAt">) => void;
-    updateProduct: (id: number, product: Partial<Product>) => void;
-    deleteProduct: (id: number) => void;
+    addProduct: (product: Omit<Product, "id" | "slug" | "createdAt">) => Promise<void>;
+    updateProduct: (id: number, product: Partial<Product>) => Promise<void>;
+    deleteProduct: (id: number) => Promise<void>;
     getProductBySlug: (slug: string) => Product | undefined;
+    loading: boolean;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-const defaultProducts: Product[] = [];
-
 export const ProductProvider = ({ children }: { children: React.ReactNode }) => {
-    const [products, setProducts] = useState<Product[]>(() => {
-        const saved = localStorage.getItem("products");
-        return saved ? JSON.parse(saved) : defaultProducts;
-    });
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        localStorage.setItem("products", JSON.stringify(products));
-        window.dispatchEvent(new Event("storage"));
-    }, [products]);
+    const fetchProducts = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-    // Listen for changes from other tabs
-    useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === "products" && e.newValue) {
-                setProducts(JSON.parse(e.newValue));
+            if (error) throw error;
+
+            if (data) {
+                const formattedProducts: Product[] = data.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    brand: item.brand,
+                    price: Number(item.price),
+                    images: item.images || [],
+                    category: item.category,
+                    sizes: item.sizes as ProductSize[],
+                    description: item.description,
+                    slug: item.slug,
+                    createdAt: item.created_at,
+                    collectionId: item.collection_id
+                }));
+                setProducts(formattedProducts);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            toast.error("Erro ao carregar produtos");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        window.addEventListener("storage", handleStorageChange);
-        return () => window.removeEventListener("storage", handleStorageChange);
+    useEffect(() => {
+        fetchProducts();
+
+        const channel = supabase
+            .channel('public:products')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'products' },
+                (payload) => {
+                    console.log('Realtime update:', payload);
+                    fetchProducts();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const generateSlug = (name: string) => {
@@ -64,36 +98,72 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
             .replace(/(^-|-$)+/g, "");
     };
 
-    const addProduct = (product: Omit<Product, "id" | "slug" | "createdAt">) => {
-        const newProduct: Product = {
-            ...product,
-            id: Date.now(),
-            slug: generateSlug(product.name),
-            createdAt: new Date().toISOString(),
-        };
-        setProducts((prev) => [...prev, newProduct]);
-        toast.success("Produto adicionado com sucesso!");
+    const addProduct = async (product: Omit<Product, "id" | "slug" | "createdAt">) => {
+        try {
+            const slug = generateSlug(product.name);
+            const { error } = await supabase
+                .from('products')
+                .insert([{
+                    name: product.name,
+                    brand: product.brand,
+                    price: product.price,
+                    images: product.images,
+                    category: product.category,
+                    sizes: product.sizes,
+                    description: product.description,
+                    slug: slug,
+                    collection_id: product.collectionId
+                }]);
+
+            if (error) throw error;
+            toast.success("Produto adicionado com sucesso!");
+        } catch (error) {
+            console.error('Error adding product:', error);
+            toast.error("Erro ao adicionar produto");
+        }
     };
 
-    const updateProduct = (id: number, updatedProduct: Partial<Product>) => {
-        setProducts((prev) =>
-            prev.map((p) => {
-                if (p.id === id) {
-                    const newProduct = { ...p, ...updatedProduct };
-                    if (updatedProduct.name) {
-                        newProduct.slug = generateSlug(updatedProduct.name);
-                    }
-                    return newProduct;
-                }
-                return p;
-            })
-        );
-        toast.success("Produto atualizado com sucesso!");
+    const updateProduct = async (id: number, updatedProduct: Partial<Product>) => {
+        try {
+            const updates: any = { ...updatedProduct };
+            if (updatedProduct.name) {
+                updates.slug = generateSlug(updatedProduct.name);
+            }
+            // Map camelCase to snake_case for DB
+            if (updatedProduct.collectionId !== undefined) {
+                updates.collection_id = updatedProduct.collectionId;
+                delete updates.collectionId;
+            }
+            if (updatedProduct.createdAt) {
+                delete updates.createdAt;
+            }
+
+            const { error } = await supabase
+                .from('products')
+                .update(updates)
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success("Produto atualizado com sucesso!");
+        } catch (error) {
+            console.error('Error updating product:', error);
+            toast.error("Erro ao atualizar produto");
+        }
     };
 
-    const deleteProduct = (id: number) => {
-        setProducts((prev) => prev.filter((p) => p.id !== id));
-        toast.success("Produto removido com sucesso!");
+    const deleteProduct = async (id: number) => {
+        try {
+            const { error } = await supabase
+                .from('products')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success("Produto removido com sucesso!");
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            toast.error("Erro ao remover produto");
+        }
     };
 
     const getProductBySlug = (slug: string) => {
@@ -101,7 +171,7 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
     };
 
     return (
-        <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, getProductBySlug }}>
+        <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, getProductBySlug, loading }}>
             {children}
         </ProductContext.Provider>
     );
