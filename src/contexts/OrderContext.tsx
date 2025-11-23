@@ -13,6 +13,7 @@ export interface Order {
     id: number;
     clientId: number;
     clientName: string;
+    clientAddress: string;
     items: OrderItem[];
     total: number;
     status: "Pendente" | "Processando" | "Enviado" | "Entregue" | "Cancelado";

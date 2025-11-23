@@ -52,6 +52,7 @@ const Checkout = () => {
         addOrder({
             clientId: Date.now(), // Temporary ID generation
             clientName: formData.name,
+            clientAddress: formData.address,
             items: items.map(item => ({
                 productId: item.id,
                 productName: item.name,

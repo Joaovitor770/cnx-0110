@@ -149,6 +149,10 @@ const Orders = () => {
                                         {new Date(selectedOrder.createdAt).toLocaleString("pt-BR")}
                                     </p>
                                 </div>
+                                <div className="col-span-2">
+                                    <h4 className="font-semibold mb-2">Endereço de Entrega</h4>
+                                    <p className="text-sm text-muted-foreground">{selectedOrder.clientAddress || "Endereço não informado"}</p>
+                                </div>
                             </div>
 
                             <div>
