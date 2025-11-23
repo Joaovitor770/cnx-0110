@@ -13,6 +13,20 @@ const Diagnostics = () => {
         setLoading(true);
         const newResults = [];
 
+        // Test 0: Environment Variables
+        try {
+            const url = import.meta.env.VITE_SUPABASE_URL;
+            const key = import.meta.env.VITE_SUPABASE_KEY;
+            if (!url || !key) throw new Error("Variáveis de ambiente ausentes");
+            newResults.push({
+                name: "Variáveis de Ambiente",
+                status: "OK",
+                message: "URL e Key configuradas"
+            });
+        } catch (e: any) {
+            newResults.push({ name: "Variáveis de Ambiente", status: "Erro", message: e.message });
+        }
+
         // Test 1: Auth Status
         try {
             const { data: { session } } = await supabase.auth.getSession();
