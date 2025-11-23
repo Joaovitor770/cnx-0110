@@ -45,9 +45,9 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
                 }));
                 setCollections(formattedCollections);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching collections:', error);
-            toast.error("Erro ao carregar coleções");
+            toast.error(error.message || "Erro ao carregar coleções");
         } finally {
             setLoading(false);
         }
@@ -97,9 +97,9 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
 
             if (error) throw error;
             toast.success("Coleção adicionada com sucesso!");
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error adding collection:', error);
-            toast.error("Erro ao adicionar coleção");
+            toast.error(error.message || "Erro ao adicionar coleção");
         }
     };
 
@@ -120,9 +120,9 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
 
             if (error) throw error;
             toast.success("Coleção atualizada com sucesso!");
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating collection:', error);
-            toast.error("Erro ao atualizar coleção");
+            toast.error(error.message || "Erro ao atualizar coleção");
         }
     };
 
@@ -135,9 +135,9 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
 
             if (error) throw error;
             toast.success("Coleção removida com sucesso!");
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting collection:', error);
-            toast.error("Erro ao remover coleção");
+            toast.error(error.message || "Erro ao remover coleção");
         }
     };
 
