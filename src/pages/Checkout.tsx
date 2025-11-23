@@ -64,7 +64,7 @@ const Checkout = () => {
         });
 
         clearCart();
-        navigate("/order-confirmation");
+        navigate("/order-confirmation", { state: { paymentMethod } });
     };
 
     return (
@@ -147,11 +147,35 @@ const Checkout = () => {
                                             Cartão de Crédito
                                         </Label>
                                     </div>
-                                    <div className="flex items-center space-x-2 border p-4 rounded-md">
-                                        <RadioGroupItem value="pix" id="pix" />
-                                        <Label htmlFor="pix" className="flex-1 cursor-pointer">
-                                            Pix
-                                        </Label>
+                                    <div className="border p-4 rounded-md">
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="pix" id="pix" />
+                                            <Label htmlFor="pix" className="flex-1 cursor-pointer">
+                                                Pix
+                                            </Label>
+                                        </div>
+                                        {paymentMethod === "pix" && (
+                                            <div className="mt-4 pt-4 border-t">
+                                                <p className="text-sm font-medium mb-2">Chave Pix para pagamento:</p>
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <code className="bg-muted p-2 rounded border flex-1 text-sm font-mono">conexao011.loja@gmail.com</code>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText("conexao011.loja@gmail.com");
+                                                            toast.success("Chave Pix copiada!");
+                                                        }}
+                                                    >
+                                                        Copiar
+                                                    </Button>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">
+                                                    O pagamento será confirmado via WhatsApp após a finalização do pedido.
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="flex items-center space-x-2 border p-4 rounded-md">
                                         <RadioGroupItem value="delivery" id="delivery" />

@@ -80,7 +80,9 @@ const Footer = () => {
           </p>
           <div className="flex gap-4">
             <a
-              href="#"
+              href="https://www.instagram.com/connexao.011"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               <Instagram className="w-5 h-5" />
