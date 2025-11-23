@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import heic2any from "heic2any";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,19 +84,64 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
         setFormData({ ...formData, price: formatted });
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+
+    // ... (existing imports)
+
+    // ... inside component
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files) {
-            Array.from(files).forEach((file) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setFormData((prev) => ({
-                        ...prev,
-                        images: [...prev.images, reader.result as string],
-                    }));
-                };
-                reader.readAsDataURL(file);
-            });
+            setIsLoading(true); // Show loading state during conversion
+            const fileArray = Array.from(files);
+            const newImages: string[] = [];
+
+            try {
+                for (const file of fileArray) {
+                    let fileToProcess = file;
+
+                    // Check for HEIC
+                    if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
+                        try {
+                            console.log("Converting HEIC file:", file.name);
+                            const convertedBlob = await heic2any({
+                                blob: file,
+                                toType: "image/jpeg",
+                                quality: 0.8
+                            });
+
+                            // heic2any can return a Blob or Blob[], handle both
+                            const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                            fileToProcess = new File([blob], file.name.replace(/\.(heic|heif)$/i, ".jpg"), { type: "image/jpeg" });
+                        } catch (error) {
+                            console.error("Error converting HEIC:", error);
+                            // Continue with original file if conversion fails
+                        }
+                    }
+
+                    // Read as Data URL
+                    await new Promise<void>((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            if (reader.result) {
+                                newImages.push(reader.result as string);
+                            }
+                            resolve();
+                        };
+                        reader.readAsDataURL(fileToProcess);
+                    });
+                }
+
+                setFormData((prev) => ({
+                    ...prev,
+                    images: [...prev.images, ...newImages],
+                }));
+            } catch (error) {
+                console.error("Error processing images:", error);
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -260,7 +306,7 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
                             </p>
                             <Input
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,.heic,.heif"
                                 multiple
                                 onChange={handleImageUpload}
                                 className="hidden"
