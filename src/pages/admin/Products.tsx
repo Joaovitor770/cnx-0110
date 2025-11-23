@@ -80,7 +80,6 @@ const Products = () => {
                             <TableHead>Nome</TableHead>
                             <TableHead>Categoria</TableHead>
                             <TableHead>Preço</TableHead>
-                            <TableHead>Estoque</TableHead>
                             <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -89,8 +88,7 @@ const Products = () => {
                             <TableRow key={product.id}>
                                 <TableCell className="font-medium">{product.name}</TableCell>
                                 <TableCell>{product.category}</TableCell>
-                                <TableCell>{product.price}</TableCell>
-                                <TableCell>{product.stock}</TableCell>
+                                <TableCell>R$ {product.price.toFixed(2)}</TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-2">
                                         <Button
