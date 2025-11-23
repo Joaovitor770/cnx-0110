@@ -84,6 +84,7 @@ const ProductDetails = () => {
                             <img
                                 src={mainImage}
                                 alt={product.name}
+                                decoding="async"
                                 className="w-full h-full object-cover"
                             />
                         </div>
@@ -95,7 +96,7 @@ const ProductDetails = () => {
                                         }`}
                                     onClick={() => setMainImage(img)}
                                 >
-                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                    <img src={img} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>

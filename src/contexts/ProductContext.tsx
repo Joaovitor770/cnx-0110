@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadImage } from "@/lib/utils";
 
 export interface ProductSize {
     size: string;
@@ -100,6 +101,7 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
 
     const addProduct = async (product: Omit<Product, "id" | "slug" | "createdAt">) => {
         try {
+            const uploadedImages = await Promise.all(product.images.map(img => uploadImage(img)));
             const slug = generateSlug(product.name);
             const { error } = await supabase
                 .from('products')
@@ -107,7 +109,7 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                     name: product.name,
                     brand: product.brand,
                     price: product.price,
-                    images: product.images,
+                    images: uploadedImages,
                     category: product.category,
                     sizes: product.sizes,
                     description: product.description,
@@ -128,6 +130,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
             const updates: any = { ...updatedProduct };
             if (updatedProduct.name) {
                 updates.slug = generateSlug(updatedProduct.name);
+            }
+            if (updatedProduct.images) {
+                updates.images = await Promise.all(updatedProduct.images.map(img => uploadImage(img)));
             }
             // Map camelCase to snake_case for DB
             if (updatedProduct.collectionId !== undefined) {

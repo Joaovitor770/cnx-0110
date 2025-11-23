@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadImage } from "@/lib/utils";
 
 export interface StoreSettings {
     storeName: string;
@@ -105,8 +106,8 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
         try {
             const updates: any = {};
             if (newSettings.storeName !== undefined) updates.store_name = newSettings.storeName;
-            if (newSettings.logo !== undefined) updates.logo = newSettings.logo;
-            if (newSettings.banner !== undefined) updates.banner = newSettings.banner;
+            if (newSettings.logo !== undefined) updates.logo = await uploadImage(newSettings.logo);
+            if (newSettings.banner !== undefined) updates.banner = await uploadImage(newSettings.banner);
             if (newSettings.primaryColor !== undefined) updates.primary_color = newSettings.primaryColor;
             if (newSettings.secondaryColor !== undefined) updates.secondary_color = newSettings.secondaryColor;
             if (newSettings.contactEmail !== undefined) updates.contact_email = newSettings.contactEmail;

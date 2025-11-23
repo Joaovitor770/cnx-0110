@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadImage } from "@/lib/utils";
 
 export interface Collection {
     id: number;
@@ -83,12 +84,13 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
 
     const addCollection = async (collection: Omit<Collection, "id" | "slug">) => {
         try {
+            const uploadedImage = await uploadImage(collection.image);
             const slug = generateSlug(collection.name);
             const { error } = await supabase
                 .from('collections')
                 .insert([{
                     name: collection.name,
-                    image: collection.image,
+                    image: uploadedImage,
                     description: collection.description,
                     slug: slug
                 }]);
@@ -106,6 +108,9 @@ export const CollectionProvider = ({ children }: { children: React.ReactNode }) 
             const updates: any = { ...updatedCollection };
             if (updatedCollection.name) {
                 updates.slug = generateSlug(updatedCollection.name);
+            }
+            if (updatedCollection.image) {
+                updates.image = await uploadImage(updatedCollection.image);
             }
 
             const { error } = await supabase
