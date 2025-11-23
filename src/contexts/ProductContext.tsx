@@ -131,21 +131,21 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
             const updates: Record<string, any> = {};
 
             // Whitelist fields to ensure no invalid columns (like createdAt) are sent
-            if (updatedProduct.name) updates.name = updatedProduct.name;
-            if (updatedProduct.brand) updates.brand = updatedProduct.brand;
-            if (updatedProduct.price) updates.price = updatedProduct.price;
-            if (updatedProduct.category) updates.category = updatedProduct.category;
-            if (updatedProduct.description) updates.description = updatedProduct.description;
+            if (updatedProduct.name !== undefined) updates.name = updatedProduct.name;
+            if (updatedProduct.brand !== undefined) updates.brand = updatedProduct.brand;
+            if (updatedProduct.price !== undefined) updates.price = updatedProduct.price;
+            if (updatedProduct.category !== undefined) updates.category = updatedProduct.category;
+            if (updatedProduct.description !== undefined) updates.description = updatedProduct.description;
 
-            if (updatedProduct.images) {
+            if (updatedProduct.images !== undefined) {
                 updates.images = await Promise.all(updatedProduct.images.map(img => uploadImage(img)));
             }
 
-            if (updatedProduct.sizes) {
+            if (updatedProduct.sizes !== undefined) {
                 updates.sizes = updatedProduct.sizes as any;
             }
 
-            if (updatedProduct.name) {
+            if (updatedProduct.name !== undefined) {
                 updates.slug = generateSlug(updatedProduct.name);
             }
 
