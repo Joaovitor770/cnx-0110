@@ -52,11 +52,11 @@ const Collections = () => {
         }
     };
 
-    const handleSubmit = (data: Omit<Collection, "id" | "slug">) => {
+    const handleSubmit = async (data: Omit<Collection, "id" | "slug">) => {
         if (editingCollection) {
-            updateCollection(editingCollection.id, data);
+            await updateCollection(editingCollection.id, data);
         } else {
-            addCollection(data);
+            await addCollection(data);
         }
     };
 

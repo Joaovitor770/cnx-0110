@@ -15,7 +15,7 @@ import { Upload, X } from "lucide-react";
 interface CollectionFormProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onSubmit: (collection: Omit<Collection, "id" | "slug">) => void;
+    onSubmit: (collection: Omit<Collection, "id" | "slug">) => Promise<void>;
     initialData?: Collection | null;
 }
 
@@ -56,10 +56,19 @@ const CollectionForm = ({ open, onOpenChange, onSubmit, initialData }: Collectio
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(formData);
-        onOpenChange(false);
+        setIsLoading(true);
+        try {
+            await onSubmit(formData);
+            onOpenChange(false);
+        } catch (error) {
+            console.error("Error submitting form:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -133,8 +142,8 @@ const CollectionForm = ({ open, onOpenChange, onSubmit, initialData }: Collectio
                     </div>
 
                     <DialogFooter>
-                        <Button type="submit" className="bg-white text-black hover:bg-gray-100 font-bold">
-                            Salvar Coleção
+                        <Button type="submit" className="bg-white text-black hover:bg-gray-100 font-bold" disabled={isLoading}>
+                            {isLoading ? "Salvando..." : "Salvar Coleção"}
                         </Button>
                     </DialogFooter>
                 </form>

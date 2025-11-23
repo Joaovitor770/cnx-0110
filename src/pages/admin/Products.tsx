@@ -52,11 +52,11 @@ const Products = () => {
         }
     };
 
-    const handleSubmit = (data: Omit<Product, "id">) => {
+    const handleSubmit = async (data: Omit<Product, "id">) => {
         if (editingProduct) {
-            updateProduct(editingProduct.id, data);
+            await updateProduct(editingProduct.id, data);
         } else {
-            addProduct(data);
+            await addProduct(data);
         }
     };
 
