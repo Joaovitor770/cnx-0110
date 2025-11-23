@@ -128,20 +128,29 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
     const updateProduct = async (id: number, updatedProduct: Partial<Product>) => {
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const updates: Record<string, any> = { ...updatedProduct };
-            if (updatedProduct.name) {
-                updates.slug = generateSlug(updatedProduct.name);
-            }
+            const updates: Record<string, any> = {};
+
+            // Whitelist fields to ensure no invalid columns (like createdAt) are sent
+            if (updatedProduct.name) updates.name = updatedProduct.name;
+            if (updatedProduct.brand) updates.brand = updatedProduct.brand;
+            if (updatedProduct.price) updates.price = updatedProduct.price;
+            if (updatedProduct.category) updates.category = updatedProduct.category;
+            if (updatedProduct.description) updates.description = updatedProduct.description;
+
             if (updatedProduct.images) {
                 updates.images = await Promise.all(updatedProduct.images.map(img => uploadImage(img)));
             }
-            // Map camelCase to snake_case for DB
+
+            if (updatedProduct.sizes) {
+                updates.sizes = updatedProduct.sizes as any;
+            }
+
+            if (updatedProduct.name) {
+                updates.slug = generateSlug(updatedProduct.name);
+            }
+
             if (updatedProduct.collectionId !== undefined) {
                 updates.collection_id = updatedProduct.collectionId;
-                delete updates.collectionId;
-            }
-            if ('createdAt' in updates) {
-                delete updates.createdAt;
             }
 
             const { error } = await supabase
