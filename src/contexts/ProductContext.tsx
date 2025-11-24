@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+// ProductContext handles product data and operations
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/lib/utils";
