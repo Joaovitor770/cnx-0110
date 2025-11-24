@@ -12,8 +12,9 @@ export interface OrderItem {
 
 export interface Order {
     id: number;
-    clientId: number;
+    clientId: number | null;
     clientName: string;
+    clientPhone?: string;
     clientAddress: string;
     items: OrderItem[];
     total: number;
@@ -48,6 +49,7 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
                     id: item.id,
                     clientId: item.client_id || 0,
                     clientName: item.client_name,
+                    clientPhone: item.client_phone,
                     clientAddress: item.client_address,
                     items: item.items as OrderItem[],
                     total: Number(item.total),
@@ -91,6 +93,7 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
                 .insert([{
                     client_id: order.clientId,
                     client_name: order.clientName,
+                    client_phone: order.clientPhone,
                     client_address: order.clientAddress,
                     items: order.items,
                     total: order.total,

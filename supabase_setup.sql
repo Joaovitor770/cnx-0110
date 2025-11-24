@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS public.products (
     sizes JSONB NOT NULL DEFAULT '[]',
     description TEXT,
     slug TEXT NOT NULL UNIQUE,
-    collection_id BIGINT REFERENCES public.collections(id) ON DELETE SET NULL
+    collection_id BIGINT REFERENCES public.collections(id) ON DELETE SET NULL,
+    category_id BIGINT REFERENCES public.categories(id) ON DELETE SET NULL
 );
 
 -- Enable Row Level Security for products

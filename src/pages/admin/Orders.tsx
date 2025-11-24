@@ -150,6 +150,10 @@ const Orders = () => {
                                     </p>
                                 </div>
                                 <div className="col-span-2">
+                                    <h4 className="font-semibold mb-2">Telefone</h4>
+                                    <p className="text-sm text-muted-foreground">{selectedOrder.clientPhone || "Não informado"}</p>
+                                </div>
+                                <div className="col-span-2">
                                     <h4 className="font-semibold mb-2">Endereço de Entrega</h4>
                                     <p className="text-sm text-muted-foreground">{selectedOrder.clientAddress || "Endereço não informado"}</p>
                                 </div>

@@ -23,6 +23,7 @@ const AdminLayout = () => {
         { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
         { icon: Package, label: "Produtos", path: "/admin/products" },
         { icon: Layers, label: "Coleções", path: "/admin/collections" },
+        { icon: Layers, label: "Categorias", path: "/admin/categories" },
         { icon: ShoppingBag, label: "Pedidos", path: "/admin/orders" },
         { icon: Users, label: "Clientes", path: "/admin/clients" },
         { icon: Settings, label: "Configurações", path: "/admin/settings" },

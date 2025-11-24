@@ -72,7 +72,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
     const getTotal = () => {
         const total = items.reduce((sum, item) => {
-            const price = parseFloat(item.price.replace("R$", "").replace(".", "").replace(",", ".").trim());
+            const price = parseFloat(item.price.replace("R$", "").replace(/\./g, "").replace(",", ".").trim());
             return sum + price * item.quantity;
         }, 0);
         return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(total);

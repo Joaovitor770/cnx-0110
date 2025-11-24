@@ -50,12 +50,13 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
         if (initialData) {
             setFormData({
                 name: initialData.name,
-                price: initialData.price.toString(),
+                price: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(initialData.price),
                 category: initialData.category,
                 images: initialData.images || [],
                 sizes: initialData.sizes || [],
                 description: initialData.description || "",
                 collectionId: initialData.collectionId,
+                categoryId: initialData.categoryId,
             });
         } else {
             setFormData({
@@ -173,7 +174,7 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        const priceValue = parseFloat(formData.price.replace("R$", "").replace(".", "").replace(",", ".").trim());
+        const priceValue = parseFloat(formData.price.replace("R$", "").replace(/\./g, "").replace(",", ".").trim());
 
         try {
             await onSubmit({

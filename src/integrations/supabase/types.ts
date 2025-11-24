@@ -7,13 +7,32 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          id: number
+          created_at: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       collections: {
         Row: {
           id: number
@@ -54,6 +73,7 @@ export type Database = {
           description: string | null
           slug: string
           collection_id: number | null
+          category_id: number | null
         }
         Insert: {
           id?: number
@@ -67,6 +87,7 @@ export type Database = {
           description?: string | null
           slug: string
           collection_id?: number | null
+          category_id?: number | null
         }
         Update: {
           id?: number
@@ -80,12 +101,19 @@ export type Database = {
           description?: string | null
           slug?: string
           collection_id?: number | null
+          category_id?: number | null
         }
         Relationships: [
           {
             foreignKeyName: "products_collection_id_fkey"
             columns: ["collection_id"]
             referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           }
         ]

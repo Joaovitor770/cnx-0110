@@ -14,6 +14,7 @@ import Clients from "./pages/admin/Clients";
 import Orders from "./pages/admin/Orders";
 import Settings from "./pages/admin/Settings";
 import Collections from "./pages/admin/Collections";
+import Categories from "./pages/admin/Categories";
 import Diagnostics from "./pages/admin/Diagnostics";
 import AdminLayout from "./components/admin/AdminLayout";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -23,6 +24,7 @@ import { ClientProvider } from "./contexts/ClientContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
 import { OrderProvider } from "./contexts/OrderContext";
 import { CollectionProvider } from "./contexts/CollectionContext";
+import { CategoryProvider } from "./contexts/CategoryContext";
 
 const queryClient = new QueryClient();
 
@@ -34,34 +36,37 @@ const App = () => (
           <ClientProvider>
             <OrderProvider>
               <CollectionProvider>
-                <CartProvider>
-                  <TooltipProvider>
-                    <Toaster />
-                    <BrowserRouter>
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/product/:id" element={<ProductDetails />} />
-                        <Route path="/collections/:slug" element={<CollectionDetails />} />
-                        <Route path="/checkout" element={<Checkout />} />
-                        <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                <CategoryProvider>
+                  <CartProvider>
+                    <TooltipProvider>
+                      <Toaster />
+                      <BrowserRouter>
+                        <Routes>
+                          <Route path="/" element={<Index />} />
+                          <Route path="/product/:id" element={<ProductDetails />} />
+                          <Route path="/collections/:slug" element={<CollectionDetails />} />
+                          <Route path="/checkout" element={<Checkout />} />
+                          <Route path="/order-confirmation" element={<OrderConfirmation />} />
 
-                        {/* Admin Routes */}
-                        <Route path="/admin/login" element={<Login />} />
-                        <Route path="/admin" element={<AdminLayout />}>
-                          <Route index element={<Dashboard />} />
-                          <Route path="products" element={<Products />} />
-                          <Route path="clients" element={<Clients />} />
-                          <Route path="orders" element={<Orders />} />
-                          <Route path="collections" element={<Collections />} />
-                          <Route path="settings" element={<Settings />} />
-                          <Route path="diagnostics" element={<Diagnostics />} />
-                        </Route>
+                          {/* Admin Routes */}
+                          <Route path="/admin/login" element={<Login />} />
+                          <Route path="/admin" element={<AdminLayout />}>
+                            <Route index element={<Dashboard />} />
+                            <Route path="products" element={<Products />} />
+                            <Route path="clients" element={<Clients />} />
+                            <Route path="orders" element={<Orders />} />
+                            <Route path="collections" element={<Collections />} />
+                            <Route path="categories" element={<Categories />} />
+                            <Route path="settings" element={<Settings />} />
+                            <Route path="diagnostics" element={<Diagnostics />} />
+                          </Route>
 
-                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                      </Routes>
-                    </BrowserRouter>
-                  </TooltipProvider>
-                </CartProvider>
+                          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                        </Routes>
+                      </BrowserRouter>
+                    </TooltipProvider>
+                  </CartProvider>
+                </CategoryProvider>
               </CollectionProvider>
             </OrderProvider>
           </ClientProvider>

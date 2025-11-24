@@ -123,11 +123,11 @@ const ProductDetails = () => {
                                         key={item.size}
                                         disabled={item.stock === 0}
                                         onClick={() => setSelectedSize(item.size)}
-                                        className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all ${selectedSize === item.size
-                                            ? "bg-primary text-primary-foreground border-primary"
+                                        className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all font-bold ${selectedSize === item.size
+                                            ? "bg-[hsl(45,100%,50%)] text-black border-[hsl(45,100%,50%)] shadow-lg scale-110"
                                             : item.stock === 0
-                                                ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                                                : "bg-background text-foreground border-input hover:border-primary"
+                                                ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50 border-muted"
+                                                : "bg-background text-foreground border-input hover:border-[hsl(45,100%,50%)] hover:scale-105"
                                             }`}
                                     >
                                         {item.size}
@@ -168,7 +168,7 @@ const ProductDetails = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

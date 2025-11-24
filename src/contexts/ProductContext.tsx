@@ -20,6 +20,7 @@ export interface Product {
     slug: string;
     createdAt: string;
     collectionId?: number;
+    categoryId?: number;
 }
 
 interface ProductContextType {
@@ -103,6 +104,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
         try {
             const uploadedImages = await Promise.all(product.images.map(img => uploadImage(img)));
             const slug = generateSlug(product.name);
+
+            console.log("📦 Adding product with sizes:", product.sizes);
+
             const { error } = await supabase
                 .from('products')
                 .insert([{
@@ -111,13 +115,19 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                     price: product.price,
                     images: uploadedImages,
                     category: product.category,
-                    sizes: product.sizes as any,
+                    sizes: product.sizes,
                     description: product.description,
                     slug: slug,
-                    collection_id: product.collectionId
+                    collection_id: product.collectionId,
+                    category_id: product.categoryId
                 }]);
 
-            if (error) throw error;
+            if (error) {
+                console.error("❌ Error inserting product:", error);
+                throw error;
+            }
+
+            console.log("✅ Product added successfully!");
             toast.success("Produto adicionado com sucesso!");
         } catch (error) {
             console.error('Error adding product:', error);
@@ -127,6 +137,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
 
     const updateProduct = async (id: number, updatedProduct: Partial<Product>) => {
         try {
+            // Get current product to check if name changed
+            const currentProduct = products.find(p => p.id === id);
+
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const updates: Record<string, any> = {};
 
@@ -145,12 +158,17 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                 updates.sizes = updatedProduct.sizes as any;
             }
 
-            if (updatedProduct.name !== undefined) {
+            // Only regenerate slug if name actually changed
+            if (updatedProduct.name !== undefined && currentProduct && updatedProduct.name !== currentProduct.name) {
                 updates.slug = generateSlug(updatedProduct.name);
             }
 
             if (updatedProduct.collectionId !== undefined) {
                 updates.collection_id = updatedProduct.collectionId;
+            }
+
+            if (updatedProduct.categoryId !== undefined) {
+                updates.category_id = updatedProduct.categoryId;
             }
 
             const { error } = await supabase
