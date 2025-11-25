@@ -48,13 +48,13 @@ const FeaturedProducts = () => {
         {/* Category Filter */}
         {categories.length > 0 && (
           <RevealOnScroll>
-            <div className="flex flex-wrap justify-center gap-3 mb-8">
+            <div className="flex overflow-x-auto gap-3 mb-8 pb-2 px-4 justify-start md:justify-center snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
               <Button
                 variant={selectedCategory === null ? "default" : "outline"}
                 onClick={() => setSelectedCategory(null)}
-                className={selectedCategory === null
+                className={`whitespace-nowrap flex-shrink-0 snap-center ${selectedCategory === null
                   ? "bg-[hsl(45,100%,50%)] text-black hover:bg-[hsl(42,100%,40%)] font-bold"
-                  : "border-primary/20 hover:border-primary hover:bg-primary/10"}
+                  : "border-primary/20 hover:border-primary hover:bg-primary/10"}`}
               >
                 Todas
               </Button>
@@ -63,9 +63,9 @@ const FeaturedProducts = () => {
                   key={category.id}
                   variant={selectedCategory === category.id ? "default" : "outline"}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={selectedCategory === category.id
+                  className={`whitespace-nowrap flex-shrink-0 snap-center ${selectedCategory === category.id
                     ? "bg-[hsl(45,100%,50%)] text-black hover:bg-[hsl(42,100%,40%)] font-bold"
-                    : "border-primary/20 hover:border-primary hover:bg-primary/10"}
+                    : "border-primary/20 hover:border-primary hover:bg-primary/10"}`}
                 >
                   {category.name}
                 </Button>
