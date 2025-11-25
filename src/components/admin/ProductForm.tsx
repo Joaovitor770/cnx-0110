@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Product } from "@/contexts/ProductContext";
 import { useCollections } from "@/contexts/CollectionContext";
+import { useCategories } from "@/contexts/CategoryContext";
 import { X, Plus, Upload } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -32,6 +33,7 @@ interface ProductFormProps {
 
 const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormProps) => {
     const { collections } = useCollections();
+    const { categories } = useCategories();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
@@ -222,12 +224,29 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
 
                     <div className="space-y-2">
                         <Label htmlFor="category">Categoria</Label>
-                        <Input
-                            id="category"
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            required
-                        />
+                        <Select
+                            value={formData.categoryId?.toString()}
+                            onValueChange={(value) => {
+                                const categoryId = parseInt(value);
+                                const categoryName = categories.find(c => c.id === categoryId)?.name || "";
+                                setFormData({
+                                    ...formData,
+                                    categoryId: categoryId,
+                                    category: categoryName
+                                });
+                            }}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione uma categoria" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {categories.map((category) => (
+                                    <SelectItem key={category.id} value={category.id.toString()}>
+                                        {category.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="space-y-2">
