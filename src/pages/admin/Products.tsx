@@ -20,14 +20,24 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useProducts, Product } from "@/contexts/ProductContext";
+import { useCategories } from "@/contexts/CategoryContext";
 import ProductForm from "@/components/admin/ProductForm";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const Products = () => {
     const { products, deleteProduct, addProduct, updateProduct } = useProducts();
+    const { categories } = useCategories();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState<number | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
     const handleAdd = () => {
         setEditingProduct(null);
@@ -60,17 +70,39 @@ const Products = () => {
         }
     };
 
+    const filteredProducts = selectedCategory === "all"
+        ? products
+        : products.filter(product => product.categoryId?.toString() === selectedCategory);
+
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold tracking-tight">Produtos</h2>
-                <Button
-                    className="bg-white text-black hover:bg-gray-100 gap-2 font-bold"
-                    onClick={handleAdd}
-                >
-                    <Plus className="w-4 h-4" />
-                    Novo Produto
-                </Button>
+                <div className="flex gap-4">
+                    <Select
+                        value={selectedCategory}
+                        onValueChange={setSelectedCategory}
+                    >
+                        <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="Filtrar por categoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas as Categorias</SelectItem>
+                            {categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id.toString()}>
+                                    {category.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button
+                        className="bg-white text-black hover:bg-gray-100 gap-2 font-bold"
+                        onClick={handleAdd}
+                    >
+                        <Plus className="w-4 h-4" />
+                        Novo Produto
+                    </Button>
+                </div>
             </div>
 
             <div className="border rounded-md">
@@ -84,7 +116,7 @@ const Products = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {products.map((product) => (
+                        {filteredProducts.map((product) => (
                             <TableRow key={product.id}>
                                 <TableCell className="font-medium">{product.name}</TableCell>
                                 <TableCell>{product.category}</TableCell>
