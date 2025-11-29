@@ -115,7 +115,7 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                     price: product.price,
                     images: uploadedImages,
                     category: product.category,
-                    sizes: product.sizes,
+                    sizes: product.sizes as any,
                     description: product.description,
                     slug: slug,
                     collection_id: product.collectionId,

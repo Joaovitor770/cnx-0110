@@ -69,6 +69,7 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
                 sizes: [],
                 description: "",
                 collectionId: undefined,
+                categoryId: undefined,
             });
         }
     }, [initialData, open]);
