@@ -28,7 +28,14 @@ const FeaturedProducts = () => {
 
   // Filter products by selected category
   const filteredProducts = selectedCategory
-    ? products.filter(product => product.categoryId === selectedCategory)
+    ? products.filter(product => {
+      if (product.categoryId) {
+        return product.categoryId === selectedCategory;
+      }
+      // Fallback: check by name if categoryId is missing
+      const category = categories.find(c => c.id === selectedCategory);
+      return category && product.category === category.name;
+    })
     : products;
 
   return (

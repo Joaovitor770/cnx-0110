@@ -106,8 +106,6 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
             const uploadedImages = await Promise.all(product.images.map(img => uploadImage(img)));
             const slug = generateSlug(product.name);
 
-            console.log("📦 Adding product with sizes:", product.sizes);
-
             const { error } = await supabase
                 .from('products')
                 .insert([{

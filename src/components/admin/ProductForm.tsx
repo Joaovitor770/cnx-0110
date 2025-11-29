@@ -58,7 +58,7 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
                 sizes: initialData.sizes || [],
                 description: initialData.description || "",
                 collectionId: initialData.collectionId,
-                categoryId: initialData.categoryId,
+                categoryId: initialData.categoryId || (initialData.category ? categories.find(c => c.name === initialData.category)?.id : undefined),
             });
         } else {
             setFormData({
