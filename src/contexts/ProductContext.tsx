@@ -59,7 +59,8 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                     description: item.description,
                     slug: item.slug,
                     createdAt: item.created_at,
-                    collectionId: item.collection_id
+                    collectionId: item.collection_id,
+                    categoryId: item.category_id
                 }));
                 setProducts(formattedProducts);
             }
