@@ -87,12 +87,12 @@ const Hero = () => {
       <div className="absolute inset-0 transition-all duration-700 ease-in-out">
         {(slide.background_type === "Imagem + Texto" || slide.background_type === "Somente Imagem") && slide.image_url ? (
           <div
-            className={`absolute inset-0 bg-cover bg-center transition-all duration-700 ${slide.background_type === "Imagem + Texto" ? "opacity-40 blur-sm" : ""}`}
+            className={`absolute inset-0 bg-contain md:bg-cover bg-center bg-no-repeat transition-all duration-700 ${slide.background_type === "Imagem + Texto" ? "opacity-40 blur-sm" : ""}`}
             style={{ backgroundImage: `url('${slide.image_url}')` }}
           />
         ) : (
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-40 blur-sm transition-all duration-700"
+            className="absolute inset-0 bg-contain md:bg-cover bg-center bg-no-repeat opacity-40 blur-sm transition-all duration-700"
             style={{ backgroundImage: "url('/hero-bg.png')" }}
           />
         )}
