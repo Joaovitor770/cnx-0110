@@ -16,6 +16,7 @@ import Settings from "./pages/admin/Settings";
 import Collections from "./pages/admin/Collections";
 import Categories from "./pages/admin/Categories";
 import Diagnostics from "./pages/admin/Diagnostics";
+import HeroManager from "./pages/admin/HeroManager";
 import AdminLayout from "./components/admin/AdminLayout";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -59,6 +60,7 @@ const App = () => (
                             <Route path="categories" element={<Categories />} />
                             <Route path="settings" element={<Settings />} />
                             <Route path="diagnostics" element={<Diagnostics />} />
+                            <Route path="hero" element={<HeroManager />} />
                           </Route>
 
                           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

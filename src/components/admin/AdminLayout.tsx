@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { LayoutDashboard, Package, ShoppingBag, Users, Settings, LogOut, Layers, Menu } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, Settings, LogOut, Layers, Menu, Image } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { useEffect } from "react";
@@ -28,6 +28,7 @@ const AdminLayout = () => {
         { icon: Users, label: "Clientes", path: "/admin/clients" },
         { icon: Settings, label: "Configurações", path: "/admin/settings" },
         { icon: Layers, label: "Diagnóstico", path: "/admin/diagnostics" },
+        { icon: Image, label: "Hero Manager", path: "/admin/hero" },
     ];
 
     const SidebarContent = () => (

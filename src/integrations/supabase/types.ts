@@ -223,6 +223,51 @@ export type Database = {
         }
         Relationships: []
       }
+      hero_slides: {
+        Row: {
+          id: string
+          title: string | null
+          subtitle: string | null
+          image_url: string | null
+          button_text: string | null
+          button_link: string | null
+          background_type: string | null
+          background_color: string | null
+          order_index: number
+          active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title?: string | null
+          subtitle?: string | null
+          image_url?: string | null
+          button_text?: string | null
+          button_link?: string | null
+          background_type?: string | null
+          background_color?: string | null
+          order_index?: number
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string | null
+          subtitle?: string | null
+          image_url?: string | null
+          button_text?: string | null
+          button_link?: string | null
+          background_type?: string | null
+          background_color?: string | null
+          order_index?: number
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
