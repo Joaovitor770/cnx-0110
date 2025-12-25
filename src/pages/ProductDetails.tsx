@@ -15,13 +15,48 @@ const ProductDetails = () => {
 
     const product = products.find((p) => p.id === Number(id));
     const [selectedSize, setSelectedSize] = useState("");
+    const [selectedColor, setSelectedColor] = useState<ProductColor | null>(null);
     const [mainImage, setMainImage] = useState("");
+    const [displayImages, setDisplayImages] = useState<string[]>([]);
 
     useEffect(() => {
-        if (product && product.images.length > 0) {
-            setMainImage(product.images[0]);
+        if (product) {
+            // Set initial images
+            let initialImages = product.images || [];
+
+            // If product has colors, select the first one by default
+            if (product.colors && product.colors.length > 0) {
+                const firstColor = product.colors[0];
+                setSelectedColor(firstColor);
+                if (firstColor.images && firstColor.images.length > 0) {
+                    initialImages = firstColor.images;
+                }
+            }
+
+            setDisplayImages(initialImages);
+            if (initialImages.length > 0) {
+                setMainImage(initialImages[0]);
+            }
         }
     }, [product]);
+
+    // Update images when color changes
+    useEffect(() => {
+        if (selectedColor && selectedColor.images && selectedColor.images.length > 0) {
+            setDisplayImages(selectedColor.images);
+            setMainImage(selectedColor.images[0]);
+        } else if (product) {
+            // If color has no specific images, or no color selected (though we invoke this on select), fallback?
+            // Actually, if we just selected a color and it has NO images, we might want to keep showing default images 
+            // OR show empty. Let's assume for now we keep default product images if color/variant has none.
+            if (selectedColor && (!selectedColor.images || selectedColor.images.length === 0)) {
+                // Fallback to main product images if specific color has none
+                setDisplayImages(product.images || []);
+                if (product.images && product.images.length > 0) setMainImage(product.images[0]);
+            }
+        }
+    }, [selectedColor, product]);
+
 
     if (!product) {
         return (
@@ -36,12 +71,14 @@ const ProductDetails = () => {
             toast.error("Por favor, selecione um tamanho.");
             return;
         }
+
         addToCart({
             id: product.id,
             name: product.name,
             price: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price),
-            image: product.images[0],
+            image: mainImage, // Use currently displayed image
             size: selectedSize,
+            color: selectedColor?.name
         });
     };
 
@@ -51,14 +88,13 @@ const ProductDetails = () => {
             return;
         }
 
-        // Add to cart directly without showing the success toast from addToCart if possible, 
-        // but addToCart shows toast. We can just call it.
         addToCart({
             id: product.id,
             name: product.name,
             price: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price),
-            image: product.images[0],
+            image: mainImage,
             size: selectedSize,
+            color: selectedColor?.name
         });
 
         navigate("/checkout");
@@ -89,7 +125,7 @@ const ProductDetails = () => {
                             />
                         </div>
                         <div className="grid grid-cols-4 gap-4">
-                            {product.images.map((img, index) => (
+                            {displayImages.map((img, index) => (
                                 <button
                                     key={index}
                                     className={`aspect-square rounded-md overflow-hidden border-2 transition-colors ${mainImage === img ? "border-primary" : "border-transparent"
@@ -114,6 +150,30 @@ const ProductDetails = () => {
                         <div className="text-3xl font-bold text-primary">
                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
                         </div>
+
+                        {/* Color Selection */}
+                        {product.colors && product.colors.length > 0 && (
+                            <div className="space-y-4">
+                                <h3 className="font-medium text-foreground">Cores</h3>
+                                <div className="flex flex-wrap gap-3">
+                                    {product.colors.map((color) => (
+                                        <button
+                                            key={color.name}
+                                            onClick={() => setSelectedColor(color)}
+                                            className={`w-10 h-10 rounded-full border-2 transition-all ${selectedColor?.name === color.name
+                                                    ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-110"
+                                                    : "border-transparent hover:scale-110"
+                                                }`}
+                                            title={color.name}
+                                            style={{ backgroundColor: color.colorValue }}
+                                        />
+                                    ))}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Cor selecionada: <span className="font-medium text-foreground">{selectedColor?.name}</span>
+                                </p>
+                            </div>
+                        )}
 
                         <div className="space-y-4">
                             <h3 className="font-medium text-foreground">Tamanhos</h3>

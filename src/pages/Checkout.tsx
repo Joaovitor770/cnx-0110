@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useOrders } from "@/contexts/OrderContext";
+import { useProducts } from "@/contexts/ProductContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ const Checkout = () => {
     const { items, clearCart, updateQuantity, removeFromCart } = useCart();
     const { settings } = useSettings();
     const { addOrder } = useOrders();
+    const { decrementStock } = useProducts();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: "",
@@ -55,41 +57,49 @@ const Checkout = () => {
 
         const fullAddress = `${formData.street}, ${formData.number}, ${formData.neighborhood}, ${formData.city} - Ref: ${formData.reference}`;
 
-        await addOrder({
-            clientId: null, // Guest checkout
-            clientName: formData.name,
-            clientPhone: formData.phone,
-            clientAddress: fullAddress,
-            items: items.map(item => ({
-                productId: item.id,
-                productName: item.name,
-                size: item.size,
-                quantity: item.quantity,
-                price: parseFloat(item.price.replace("R$", "").replace(/\./g, "").replace(",", ".").trim())
-            })),
-            total: total,
-            status: "Pendente"
-        });
+        try {
+            await addOrder({
+                clientId: null, // Guest checkout
+                clientName: formData.name,
+                clientPhone: formData.phone,
+                clientAddress: fullAddress,
+                items: items.map(item => ({
+                    productId: item.id,
+                    productName: item.name,
+                    size: item.size,
+                    quantity: item.quantity,
+                    price: parseFloat(item.price.replace("R$", "").replace(/\./g, "").replace(",", ".").trim())
+                })),
+                total: total,
+                status: "Pendente"
+            });
 
-        clearCart();
+            // Decrement stock for each item
+            await Promise.all(items.map(item => decrementStock(item.id, item.size, item.quantity)));
 
-        if (paymentMethod === "credit_card") {
-            const itemsList = items.map(item =>
-                `• ${item.name} (${item.size}) - Qtd: ${item.quantity}`
-            ).join("\n");
+            clearCart();
 
-            const message = `*Novo Pedido - Cartão de Crédito*\n\n` +
-                `*Cliente:* ${formData.name}\n` +
-                `*Telefone:* ${formData.phone}\n` +
-                `*Endereço:* ${fullAddress}\n\n` +
-                `*Itens:*\n${itemsList}\n\n` +
-                `*Total:* ${formatCurrency(total)}\n\n` +
-                `Segue os dados da minha compra, aguardo o link de pagamento.`;
+            if (paymentMethod === "credit_card") {
+                const itemsList = items.map(item =>
+                    `• ${item.name} (${item.size}) - Qtd: ${item.quantity}`
+                ).join("\n");
 
-            const encodedMessage = encodeURIComponent(message);
-            window.location.href = `https://api.whatsapp.com/send/?phone=3398263040&text=${encodedMessage}&type=phone_number&app_absent=0`;
-        } else {
-            navigate("/order-confirmation", { state: { paymentMethod } });
+                const message = `*Novo Pedido - Cartão de Crédito*\n\n` +
+                    `*Cliente:* ${formData.name}\n` +
+                    `*Telefone:* ${formData.phone}\n` +
+                    `*Endereço:* ${fullAddress}\n\n` +
+                    `*Itens:*\n${itemsList}\n\n` +
+                    `*Total:* ${formatCurrency(total)}\n\n` +
+                    `Segue os dados da minha compra, aguardo o link de pagamento.`;
+
+                const encodedMessage = encodeURIComponent(message);
+                window.location.href = `https://api.whatsapp.com/send/?phone=3398263040&text=${encodedMessage}&type=phone_number&app_absent=0`;
+            } else {
+                navigate("/order-confirmation", { state: { paymentMethod } });
+            }
+        } catch (error) {
+            console.error("Erro ao finalizar compra:", error);
+            toast.error("Erro ao processar pedido. Tente novamente.");
         }
     };
 

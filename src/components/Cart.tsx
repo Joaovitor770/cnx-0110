@@ -44,7 +44,7 @@ const Cart = ({ open, onOpenChange }: CartProps) => {
                             <div className="space-y-4 py-4">
                                 {items.map((item) => (
                                     <div
-                                        key={`${item.id}-${item.size}`}
+                                        key={`${item.id}-${item.size}-${item.color || 'default'}`}
                                         className="flex gap-4 border-b border-border pb-4"
                                     >
                                         <div className="w-20 h-20 rounded-md overflow-hidden bg-muted flex-shrink-0">
@@ -57,6 +57,9 @@ const Cart = ({ open, onOpenChange }: CartProps) => {
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-medium text-sm truncate">{item.name}</h4>
                                             <p className="text-xs text-muted-foreground">Tamanho: {item.size}</p>
+                                            {item.color && (
+                                                <p className="text-xs text-muted-foreground">Cor: {item.color}</p>
+                                            )}
                                             <p className="text-sm font-bold text-primary mt-1">{item.price}</p>
                                             <div className="flex items-center gap-2 mt-2">
                                                 <Button
@@ -64,7 +67,7 @@ const Cart = ({ open, onOpenChange }: CartProps) => {
                                                     size="icon"
                                                     className="h-7 w-7"
                                                     onClick={() =>
-                                                        updateQuantity(item.id, item.size, item.quantity - 1)
+                                                        updateQuantity(item.id, item.size, item.quantity - 1, item.color)
                                                     }
                                                 >
                                                     <Minus className="w-3 h-3" />
@@ -77,7 +80,7 @@ const Cart = ({ open, onOpenChange }: CartProps) => {
                                                     size="icon"
                                                     className="h-7 w-7"
                                                     onClick={() =>
-                                                        updateQuantity(item.id, item.size, item.quantity + 1)
+                                                        updateQuantity(item.id, item.size, item.quantity + 1, item.color)
                                                     }
                                                 >
                                                     <Plus className="w-3 h-3" />
@@ -88,7 +91,7 @@ const Cart = ({ open, onOpenChange }: CartProps) => {
                                             variant="ghost"
                                             size="icon"
                                             className="h-8 w-8 text-destructive hover:text-destructive flex-shrink-0"
-                                            onClick={() => removeFromCart(item.id, item.size)}
+                                            onClick={() => removeFromCart(item.id, item.size, item.color)}
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
