@@ -183,8 +183,12 @@ const HeroManager = () => {
             const { data } = supabase.storage.from("hero").getPublicUrl(filePath);
             setFormData({ ...formData, image_url: data.publicUrl });
             toast.success("Imagem carregada com sucesso!");
-        } catch (error: any) {
-            toast.error(`Erro no upload: ${error.message}`);
+        } catch (error) {
+            if (error instanceof Error) {
+                toast.error(`Erro no upload: ${error.message}`);
+            } else {
+                toast.error("Erro no upload: Erro desconhecido");
+            }
             // Clear the input
             event.target.value = "";
         } finally {
