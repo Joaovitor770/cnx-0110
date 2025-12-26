@@ -276,7 +276,7 @@ const HeroManager = () => {
                                         <Input
                                             id="title"
                                             value={formData.title || ""}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, title: e.target.value })}
                                             required
                                             maxLength={60}
                                         />
@@ -286,7 +286,7 @@ const HeroManager = () => {
                                         <Input
                                             id="subtitle"
                                             value={formData.subtitle || ""}
-                                            onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, subtitle: e.target.value })}
                                             maxLength={120}
                                         />
                                     </div>
