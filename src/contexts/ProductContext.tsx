@@ -100,6 +100,11 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                 { event: '*', schema: 'public', table: 'products' },
                 () => fetchProducts()
             )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'product_colors' },
+                () => fetchProducts()
+            )
             .subscribe();
 
         return () => {
