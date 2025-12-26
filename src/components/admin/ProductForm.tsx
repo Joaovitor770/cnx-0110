@@ -10,10 +10,10 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { Product } from "@/contexts/ProductContext";
+import { Product, ProductColor } from "@/contexts/ProductContext";
 import { useCollections } from "@/contexts/CollectionContext";
 import { useCategories } from "@/contexts/CategoryContext";
-import { X, Plus, Upload } from "lucide-react";
+import { X, Plus, Upload, Palette } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import {
@@ -43,10 +43,17 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
         sizes: [] as { size: string; stock: number }[],
         description: "",
         collectionId: undefined as number | undefined,
+        categoryId: undefined as number | undefined,
+        colors: [] as Omit<ProductColor, "id" | "productId">[],
     });
 
     const [newSize, setNewSize] = useState("");
     const [newStock, setNewStock] = useState("");
+
+    // Color State
+    const [newColorName, setNewColorName] = useState("");
+    const [newColorValue, setNewColorValue] = useState("#000000");
+    const [newColorImages, setNewColorImages] = useState<string[]>([]);
 
     useEffect(() => {
         if (initialData) {
@@ -59,6 +66,7 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
                 description: initialData.description || "",
                 collectionId: initialData.collectionId,
                 categoryId: initialData.categoryId || (initialData.category ? categories.find(c => c.name === initialData.category)?.id : undefined),
+                colors: initialData.colors || [],
             });
         } else {
             setFormData({
@@ -70,6 +78,7 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
                 description: "",
                 collectionId: undefined,
                 categoryId: undefined,
+                colors: [],
             });
         }
     }, [initialData, open]);
@@ -88,55 +97,51 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
         setFormData({ ...formData, price: formatted });
     };
 
+    const processImages = async (files: FileList): Promise<string[]> => {
+        const fileArray = Array.from(files);
+        const processedImages: string[] = [];
 
+        for (const file of fileArray) {
+            let fileToProcess = file;
 
-    // ... (existing imports)
+            // Check for HEIC
+            if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
+                try {
+                    console.log("Converting HEIC file:", file.name);
+                    const convertedBlob = await heic2any({
+                        blob: file,
+                        toType: "image/jpeg",
+                        quality: 0.8
+                    });
 
-    // ... inside component
+                    const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                    fileToProcess = new File([blob], file.name.replace(/\.(heic|heif)$/i, ".jpg"), { type: "image/jpeg" });
+                } catch (error) {
+                    console.error("Error converting HEIC:", error);
+                }
+            }
+
+            // Read as Data URL
+            await new Promise<void>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    if (reader.result) {
+                        processedImages.push(reader.result as string);
+                    }
+                    resolve();
+                };
+                reader.readAsDataURL(fileToProcess);
+            });
+        }
+        return processedImages;
+    };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files) {
-            setIsLoading(true); // Show loading state during conversion
-            const fileArray = Array.from(files);
-            const newImages: string[] = [];
-
+            setIsLoading(true);
             try {
-                for (const file of fileArray) {
-                    let fileToProcess = file;
-
-                    // Check for HEIC
-                    if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
-                        try {
-                            console.log("Converting HEIC file:", file.name);
-                            const convertedBlob = await heic2any({
-                                blob: file,
-                                toType: "image/jpeg",
-                                quality: 0.8
-                            });
-
-                            // heic2any can return a Blob or Blob[], handle both
-                            const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-                            fileToProcess = new File([blob], file.name.replace(/\.(heic|heif)$/i, ".jpg"), { type: "image/jpeg" });
-                        } catch (error) {
-                            console.error("Error converting HEIC:", error);
-                            // Continue with original file if conversion fails
-                        }
-                    }
-
-                    // Read as Data URL
-                    await new Promise<void>((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            if (reader.result) {
-                                newImages.push(reader.result as string);
-                            }
-                            resolve();
-                        };
-                        reader.readAsDataURL(fileToProcess);
-                    });
-                }
-
+                const newImages = await processImages(files);
                 setFormData((prev) => ({
                     ...prev,
                     images: [...prev.images, ...newImages],
@@ -149,11 +154,30 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
         }
     };
 
+    const handleColorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files) {
+            setIsLoading(true);
+            try {
+                const newImages = await processImages(files);
+                setNewColorImages((prev) => [...prev, ...newImages]);
+            } catch (error) {
+                console.error("Error processing color images:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    };
+
     const removeImage = (index: number) => {
         setFormData((prev) => ({
             ...prev,
             images: prev.images.filter((_, i) => i !== index),
         }));
+    };
+
+    const removeColorImage = (index: number) => {
+        setNewColorImages((prev) => prev.filter((_, i) => i !== index));
     };
 
     const addSize = () => {
@@ -171,6 +195,29 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
         setFormData((prev) => ({
             ...prev,
             sizes: prev.sizes.filter((_, i) => i !== index),
+        }));
+    };
+
+    const addColor = () => {
+        if (newColorName && newColorValue) {
+            setFormData((prev) => ({
+                ...prev,
+                colors: [...(prev.colors || []), {
+                    name: newColorName,
+                    colorValue: newColorValue,
+                    images: newColorImages
+                }],
+            }));
+            setNewColorName("");
+            setNewColorValue("#000000");
+            setNewColorImages([]);
+        }
+    };
+
+    const removeColor = (index: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            colors: (prev.colors || []).filter((_, i) => i !== index),
         }));
     };
 
@@ -318,8 +365,107 @@ const ProductForm = ({ open, onOpenChange, onSubmit, initialData }: ProductFormP
                         </div>
                     </div>
 
+                    {/* Color Variations Section */}
+                    <div className="space-y-2 border-t pt-4">
+                        <Label className="text-lg font-semibold flex items-center gap-2">
+                            <Palette className="w-5 h-5" />
+                            Variações de Cores
+                        </Label>
+
+                        {/* List Existing Colors */}
+                        <div className="space-y-2">
+                            {formData.colors?.map((color, index) => (
+                                <div key={index} className="flex items-center justify-between bg-secondary/30 p-2 rounded-md border">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-8 h-8 rounded-full border shadow-sm"
+                                            style={{ backgroundColor: color.colorValue }}
+                                        />
+                                        <div>
+                                            <p className="font-medium">{color.name}</p>
+                                            <p className="text-xs text-muted-foreground">{color.images.length} imagens</p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-destructive hover:text-destructive/80"
+                                        onClick={() => removeColor(index)}
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Add New Color Form */}
+                        <div className="bg-muted/40 p-4 rounded-lg space-y-4 border border-blue-100/20">
+                            <h4 className="text-sm font-medium">Adicionar Nova Cor</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <Input
+                                    placeholder="Nome (ex: Azul Marinho)"
+                                    value={newColorName}
+                                    onChange={(e) => setNewColorName(e.target.value)}
+                                />
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="color"
+                                        className="w-12 p-1 cursor-pointer"
+                                        value={newColorValue}
+                                        onChange={(e) => setNewColorValue(e.target.value)}
+                                    />
+                                    <Input
+                                        placeholder="#000000"
+                                        value={newColorValue}
+                                        onChange={(e) => setNewColorValue(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-xs text-muted-foreground">Imagens desta cor</Label>
+                                <div className="flex flex-wrap gap-2">
+                                    {newColorImages.map((img, idx) => (
+                                        <div key={idx} className="relative w-16 h-16 rounded overflow-hidden border">
+                                            <img src={img} className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeColorImage(idx)}
+                                                className="absolute top-0 right-0 bg-black/60 text-white rounded-bl p-[2px]"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <label className="w-16 h-16 flex items-center justify-center border-2 border-dashed rounded cursor-pointer hover:bg-muted/50">
+                                        <Upload className="w-4 h-4 text-muted-foreground" />
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleColorImageUpload}
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="secondary"
+                                onClick={addColor}
+                                disabled={!newColorName}
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Adicionar Variação
+                            </Button>
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
-                        <Label>Imagens</Label>
+                        <Label>Imagens Principais (Padrão)</Label>
                         <div className="border-2 border-dashed rounded-lg p-6 text-center">
                             <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
                             <p className="text-sm text-muted-foreground mb-4">

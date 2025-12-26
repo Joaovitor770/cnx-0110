@@ -10,6 +10,7 @@ create table public.products (
   images text[] not null default '{}',
   category text,
   sizes text[] not null default '{}',
+  colors text[] default '{}',
   featured boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );

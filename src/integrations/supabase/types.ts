@@ -60,6 +60,40 @@ export type Database = {
         }
         Relationships: []
       }
+      product_colors: {
+        Row: {
+          id: string
+          product_id: number // BIGINT
+          name: string
+          color_value: string
+          images: string[]
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: number
+          name: string
+          color_value: string
+          images?: string[]
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: number
+          name?: string
+          color_value?: string
+          images?: string[]
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_colors_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       products: {
         Row: {
           id: number
