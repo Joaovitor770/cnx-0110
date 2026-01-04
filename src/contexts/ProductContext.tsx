@@ -140,7 +140,7 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                     price: product.price,
                     images: uploadedImages,
                     category: product.category,
-                    sizes: product.sizes as any,
+                    sizes: product.sizes as unknown as never,
                     description: product.description,
                     slug: slug,
                     collection_id: product.collectionId,
@@ -197,7 +197,7 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
             }
 
             if (updatedProduct.sizes !== undefined) {
-                updates.sizes = updatedProduct.sizes as any;
+                updates.sizes = updatedProduct.sizes as unknown as never;
             }
 
             if (updatedProduct.name !== undefined && currentProduct && updatedProduct.name !== currentProduct.name) {
@@ -276,10 +276,9 @@ export const ProductProvider = ({ children }: { children: React.ReactNode }) => 
                 return s;
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { error: updateError } = await supabase
                 .from('products')
-                .update({ sizes: newSizes as any })
+                .update({ sizes: newSizes as unknown as never })
                 .eq('id', id);
 
             if (updateError) throw updateError;
